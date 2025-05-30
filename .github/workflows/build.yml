@@ -1,14 +1,10 @@
-name: Build and Package UWP App
+name: Build UWP App
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-env:
-  DOTNET_VERSION: '6.0.x'
-  CERTIFICATE_PASSWORD: 'password' # Замените на секрет
 
 jobs:
   build:
@@ -18,34 +14,30 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET 6
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Install Windows 10 SDK
+      run: |
+        choco install windows-sdk-10.0 -y --version=10.0.18362.0
 
     - name: Restore NuGet packages
-      run: dotnet restore Whisp.csproj
+      run: nuget restore Whisp.csproj
 
-    - name: Add Windows SDK to PATH
-      run: |
-        echo "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64" >> $GITHUB_PATH
-
-    - name: Build project
-      run: |
-        dotnet build Whisp.csproj -c Release
-        msbuild Whisp.csproj /p:Configuration=Release /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms="x86|x64|ARM"
+    - name: Build project (Release)
+      run: msbuild Whisp.csproj /p:Configuration=Release /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms="x86|x64|ARM"
 
     - name: Create self-signed certificate
       run: |
         $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=Whisp" -KeyUsage DigitalSignature -FriendlyName "Whisp" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
         $certPath = "Cert:\CurrentUser\My\$($cert.Thumbprint)"
-        Export-PfxCertificate -Cert $certPath -FilePath "Whisp.pfx" -Password (ConvertTo-SecureString -String ${{ env.CERTIFICATE_PASSWORD }} -Force -AsPlainText)
+        Export-PfxCertificate -Cert $certPath -FilePath "Whisp.pfx" -Password (ConvertTo-SecureString -String "password" -Force -AsPlainText)
 
     - name: Sign the app package
       run: |
         $pfxPath = "Whisp.pfx"
         $appxPackage = Get-ChildItem -Path ".\AppPackages" -Filter "*.appx" -Recurse | Select-Object -First 1
-        & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /fd SHA256 /a /f $pfxPath /p ${{ env.CERTIFICATE_PASSWORD }} $appxPackage.FullName
+        & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /fd SHA256 /a /f $pfxPath /p "password" $appxPackage.FullName
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
