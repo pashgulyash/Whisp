@@ -17,15 +17,24 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Install Windows 10 SDK
+    - name: Install Required Components
       run: |
-        choco install windows-sdk-10.0 -y --version=10.0.18362.0
+        # Установка компонентов через VS Installer
+        $installerPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vsPath = & $installerPath -latest -property installationPath
+        & "$vsPath\Common7\Tools\VsDevCmd.bat" -no_logo &&
+        & "$vsPath\Common7\IDE\VSInstaller.exe" modify `
+          --installPath "$vsPath" `
+          --add Microsoft.VisualStudio.Component.Windows10SDK.18362 `
+          --add Microsoft.VisualStudio.ComponentGroup.UWP.Support `
+          --quiet --norestart --wait
 
     - name: Restore NuGet packages
       run: nuget restore Whisp.csproj
 
-    - name: Build project (Release)
-      run: msbuild Whisp.csproj /p:Configuration=Release /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms="x86|x64|ARM"
+    - name: Build project
+      run: |
+        msbuild Whisp.csproj /p:Configuration=Release /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms="x86|x64|ARM"
 
     - name: Create self-signed certificate
       run: |
