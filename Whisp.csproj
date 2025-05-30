@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>AppContainerExe</OutputType>
-    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <OutputType>WinExe</OutputType>
+    <TargetPlatformIdentifier>uap10.0</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <RootNamespace>Whisp</RootNamespace>
     <AssemblyName>Whisp</AssemblyName>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    
+    <!-- Настройки для публикации -->
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
     <AppxAutoIncrementPackageRevision>true</AppxAutoIncrementPackageRevision>
     <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
@@ -16,6 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2005" />
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.14" />
   </ItemGroup>
   
