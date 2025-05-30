@@ -18,19 +18,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
-
-    - name: Setup .NET Core
+    - name: Setup .NET 6
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore NuGet packages
-      run: nuget restore Whisp.csproj
+      run: dotnet restore Whisp.csproj
+
+    - name: Add Windows SDK to PATH
+      run: |
+        echo "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64" >> $GITHUB_PATH
 
     - name: Build project
-      run: msbuild Whisp.csproj /p:Configuration=Release /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms="x86|x64|ARM"
+      run: |
+        dotnet build Whisp.csproj -c Release
+        msbuild Whisp.csproj /p:Configuration=Release /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundlePlatforms="x86|x64|ARM"
 
     - name: Create self-signed certificate
       run: |
@@ -42,7 +45,7 @@ jobs:
       run: |
         $pfxPath = "Whisp.pfx"
         $appxPackage = Get-ChildItem -Path ".\AppPackages" -Filter "*.appx" -Recurse | Select-Object -First 1
-        & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /fd SHA256 /a /f $pfxPath /p ${{ env.CERTIFICATE_PASSWORD }} $appxPackage.FullName
+        & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /fd SHA256 /a /f $pfxPath /p ${{ env.CERTIFICATE_PASSWORD }} $appxPackage.FullName
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
