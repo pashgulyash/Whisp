@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>AppContainerExe</OutputType>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>Whisp</RootNamespace>
+    <AssemblyName>Whisp</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="MainPage.xaml.cs" />
+    <Compile Include="App.xaml.cs" />
+    <Compile Include="Note.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="MainPage.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+</Project>
